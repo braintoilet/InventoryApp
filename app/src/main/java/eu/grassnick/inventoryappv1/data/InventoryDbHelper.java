@@ -1,11 +1,16 @@
 package eu.grassnick.inventoryappv1.data;
 
 import eu.grassnick.inventoryappv1.data.InventoryContract.ProductEntry;
+
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InventoryDbHelper extends SQLiteOpenHelper {
     public static final String SQL_CREATE_PRODUCTS_TABLE = "CREATE TABLE " + ProductEntry.TABLE_NAME + " ("
@@ -37,12 +42,28 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
         // Nothing to upgrade until DATABASE_VERSION gets updated
     }
 
-    public void logCursor(Cursor cursor) {
+    public ArrayList<InventoryItem> getList(Cursor cursor) {
+        ArrayList<InventoryItem> list = new ArrayList<>();
+
         if (cursor.moveToFirst()) {
             while (!cursor.isAfterLast()) {
+                InventoryItem item = new InventoryItem(cursor.getInt(cursor.getColumnIndex(ProductEntry._ID)),
+                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME)),
+                        cursor.getFloat(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE)),
+                        cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY)),
+                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME)),
+                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE)));
 
+                Log.d(TAG, "getList: Row: " + item.getCSVString());
+                list.add(item);
+                cursor.moveToNext();
             }
         }
+
+        if (!cursor.isClosed())
+            cursor.close();
+
+        return list;
     }
 
     public Cursor readAll() {
@@ -55,5 +76,15 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
                 null,
                 null);
 
+    }
+
+    public ContentValues createDummyData() {
+        ContentValues values = new ContentValues();
+        values.put(ProductEntry.COLUMN_PRODUCT_NAME, "Keyboard");
+        values.put(ProductEntry.COLUMN_PRODUCT_PRICE, 2.00);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, 4);
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "Keyboardmakers");
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, "+49 1234 56789");
+        return values;
     }
 }

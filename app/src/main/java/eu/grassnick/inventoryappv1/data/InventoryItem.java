@@ -42,4 +42,8 @@ public class InventoryItem {
     public String getSupplierPhone() {
         return mSupplierPhone;
     }
+
+    public String getCSVString() {
+        return getID() + "," + getName() + "," + getPrice() + "," + getQuantity() + "," + getSupplierName() + "," + getSupplierPhone();
+    }
 }

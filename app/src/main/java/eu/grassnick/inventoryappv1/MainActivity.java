@@ -11,6 +11,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import eu.grassnick.inventoryappv1.data.InventoryContract;
 import eu.grassnick.inventoryappv1.data.InventoryDbHelper;
 import eu.grassnick.inventoryappv1.data.InventoryContract.ProductEntry;
@@ -18,7 +20,9 @@ import eu.grassnick.inventoryappv1.data.InventoryContract.ProductEntry;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    @BindView(R.id.test_text_view)
     private TextView testText;
+
     private InventoryDbHelper mDbHelper;
 
     @Override
@@ -26,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        testText = findViewById(R.id.test_text_view);
+        ButterKnife.bind(this);
 
         mDbHelper = new InventoryDbHelper(this);
 
@@ -44,34 +48,28 @@ public class MainActivity extends AppCompatActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.action_add_dummy_data:
-                insertData(createDummyData());
+                insertDummy(mDbHelper.createDummyData());
+                return true;
+            case R.id.action_log_db:
+                mDbHelper.getList(mDbHelper.readAll()); //prints db as CSV to debug log
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void insertData(ContentValues data) {
-        mDbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, data);
+    public void insertDummy(ContentValues values) {
+        mDbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, values);
     }
 
-    private Cursor readData() {
-        //TODO: Needs to be changed
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-        return db.rawQuery(InventoryDbHelper.SQL_GET_ALL_PRODUCTS, null);
-    }
-
-    private void printDbToLog() {
-        //TODO: Print Database to log
-    }
-
-    private ContentValues createDummyData() {
+    public void insert(String name, float price, int quantity, String supplierName, String supplierPhone) {
         ContentValues values = new ContentValues();
-        values.put(ProductEntry.COLUMN_PRODUCT_NAME, "Keyboard");
-        values.put(ProductEntry.COLUMN_PRODUCT_PRICE, 2.00);
-        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, 4);
-        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, "Keyboardmakers");
-        values.put(ProductEntry.COLUMN_PRODUCT_NAME, "+49 1234 56789");
-        return values;
+        values.put(ProductEntry.COLUMN_PRODUCT_NAME, name);
+        values.put(ProductEntry.COLUMN_PRODUCT_PRICE, price);
+        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, supplierName);
+        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, supplierPhone);
+
+        mDbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, values);
     }
 }

@@ -11,6 +11,7 @@ public final class InventoryContract {
     public static final class ProductEntry implements BaseColumns {
         //Projections
         public final static String[] PROJECTION_FULL = {
+                ProductEntry._ID,
                 ProductEntry.COLUMN_PRODUCT_NAME,
                 ProductEntry.COLUMN_PRODUCT_PRICE,
                 ProductEntry.COLUMN_PRODUCT_QUANTITY,
