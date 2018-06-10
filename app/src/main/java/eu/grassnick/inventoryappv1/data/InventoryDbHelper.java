@@ -2,6 +2,7 @@ package eu.grassnick.inventoryappv1.data;
 
 import eu.grassnick.inventoryappv1.data.InventoryContract.ProductEntry;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -34,5 +35,25 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Nothing to upgrade until DATABASE_VERSION gets updated
+    }
+
+    public void logCursor(Cursor cursor) {
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+
+            }
+        }
+    }
+
+    public Cursor readAll() {
+        return getReadableDatabase().query(
+                ProductEntry.TABLE_NAME,
+                ProductEntry.PROJECTION_FULL,
+                null,
+                null,
+                null,
+                null,
+                null);
+
     }
 }
