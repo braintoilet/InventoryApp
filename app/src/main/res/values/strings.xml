@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">InventoryAppV1</string>
+    <string name="app_name">Inventory App</string>
     <string name="menu_add_dummy_data">Add dummy data</string>
     <string name="menu_log_db">Log Database</string>
+    <string name="title_activity_add_item">Add Item</string>
+    <string name="title_activity_edit_item">Edit Item</string>
 </resources>
