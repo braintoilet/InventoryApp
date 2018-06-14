@@ -9,6 +9,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -16,20 +17,29 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
-            android:name=".AddItemActivity"
-            android:label="@string/title_activity_add_item"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".AddProductActivity"
+            android:label="@string/title_activity_add_product"
+            android:parentActivityName="eu.grassnick.inventoryappv1.AddProductActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="eu.grassnick.inventoryappv1.MainActivity" />
         </activity>
+
         <activity
-            android:name=".EditItemActivity"
-            android:label="@string/title_activity_edit_item"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:name=".EditProductActivity"
+            android:label="@string/title_activity_edit_product"
+            android:parentActivityName="eu.grassnick.inventoryappv1.ViewProductActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="eu.grassnick.inventoryappv1.MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".ViewProductActivity"
+            android:label="@string/title_activity_add_product"
+            android:parentActivityName="eu.grassnick.inventoryappv1.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="eu.grassnick.inventoryappv1.MainActivity" />

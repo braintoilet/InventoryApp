@@ -6,4 +6,7 @@
     <item
         android:id="@+id/action_log_db"
         android:title="@string/menu_log_db" />
+    <item
+        android:id="@+id/action_add_product"
+        android:title="@string/title_activity_add_product" />
 </menu>
