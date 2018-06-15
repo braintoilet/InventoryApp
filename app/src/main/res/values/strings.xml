@@ -6,9 +6,9 @@
     <string name="title_activity_edit_product">Edit Item</string>
     <string name="title_activity_product_detail">View Item</string>
     <string name="action_settings">Settings</string>
-    <string name="product_name_caption"></string>
-    <string name="product_quantity_caption"></string>
-    <string name="product_price_caption"></string>
-    <string name="product_supplier_name_caption"></string>
-    <string name="product_supplier_phone_caption"></string>
+    <string name="product_name_caption">Name</string>
+    <string name="product_quantity_caption">Quantity</string>
+    <string name="product_price_caption">Price</string>
+    <string name="product_supplier_name_caption">Supplier Name</string>
+    <string name="product_supplier_phone_caption">Supplier Phone</string>
 </resources>
