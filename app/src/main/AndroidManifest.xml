@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="eu.grassnick.inventoryappv1">
+    package="eu.grassnick.inventoryapp">
 
     <application
         android:allowBackup="true"
@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".MainActivity">
+        <activity android:name="eu.grassnick.inventoryapp.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -21,29 +21,34 @@
         <activity
             android:name=".AddProductActivity"
             android:label="@string/title_activity_add_product"
-            android:parentActivityName="eu.grassnick.inventoryappv1.AddProductActivity">
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.grassnick.inventoryappv1.MainActivity" />
+                android:value=".MainActivity" />
         </activity>
 
         <activity
             android:name=".EditProductActivity"
             android:label="@string/title_activity_edit_product"
-            android:parentActivityName="eu.grassnick.inventoryappv1.ViewProductActivity">
+            android:parentActivityName=".ViewProductActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.grassnick.inventoryappv1.MainActivity" />
+                android:value=".MainActivity" />
         </activity>
 
         <activity
             android:name=".ViewProductActivity"
             android:label="@string/title_activity_add_product"
-            android:parentActivityName="eu.grassnick.inventoryappv1.MainActivity">
+            android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="eu.grassnick.inventoryappv1.MainActivity" />
+                android:value=".MainActivity" />
         </activity>
+
+        <provider
+            android:name=".data.InventoryProvider"
+            android:authorities="eu.grassnick.inventoryapp"
+            android:exported="false" />
     </application>
 
 </manifest>
