@@ -65,18 +65,6 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    public Cursor readAll() {
-        return getReadableDatabase().query(
-                ProductEntry.TABLE_NAME,
-                ProductEntry.PROJECTION_FULL,
-                null,
-                null,
-                null,
-                null,
-                null);
-
-    }
-
     public ContentValues createDummyData() {
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, "Keyboard");

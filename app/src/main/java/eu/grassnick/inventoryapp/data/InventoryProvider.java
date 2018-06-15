@@ -1,14 +1,28 @@
 package eu.grassnick.inventoryapp.data;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+
+import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
 
 public class InventoryProvider extends ContentProvider {
     private static final String TAG = "ProductProvider";
 
+    public static final int PRODUCTS = 1000;
+    public static final int PRODUCT_ID = 1001;
     public InventoryDbHelper dbHelper;
+
+    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    static {
+        sUriMatcher.addURI(ProductEntry.CONTENT_AUTHORITY, ProductEntry.PATH_PRODUCTS, PRODUCTS);
+        sUriMatcher.addURI(ProductEntry.CONTENT_AUTHORITY, ProductEntry.PATH_PRODUCTS + "/#", PRODUCT_ID);
+    }
 
     @Override
     public boolean onCreate() {
@@ -22,7 +36,25 @@ public class InventoryProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
-        return null;
+
+        SQLiteDatabase database = dbHelper.getReadableDatabase();
+        Cursor cursor;
+
+        int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case PRODUCTS:
+                cursor = database.query(ProductEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+                break;
+            case PRODUCT_ID:
+                selection = ProductEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                cursor = database.query(ProductEntry.TABLE_NAME, projection, selection, selectionArgs, null, null, sortOrder);
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot query unknown URI " + uri);
+        }
+        return cursor;
     }
 
     /**

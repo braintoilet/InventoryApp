@@ -1,28 +1,28 @@
 package eu.grassnick.inventoryapp;
 
-import android.content.ContentValues;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
-import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
 
-    @BindView(R.id.test_text_view)
-    TextView testText;
-
-    private InventoryDbHelper mDbHelper;
+    @BindView(R.id.product_list_view)
+    RecyclerView productList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +35,19 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, AddProductActivity.class));
+                startActivity(new Intent(MainActivity.this, EditProductActivity.class));
             }
         });
+    }
 
-        mDbHelper = new InventoryDbHelper(this);
+    public void displayDatabaseInfo() {
+        String[] projection = {
+                ProductEntry._ID,
+                ProductEntry.COLUMN_PRODUCT_NAME,
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_QUANTITY};
 
+        Cursor cursor = getContentResolver().query(ProductEntry.CONTENT_URI, projection, null, null, null);
     }
 
     @Override
@@ -54,29 +61,42 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
-            case R.id.action_add_dummy_data:
-                insertDummy(mDbHelper.createDummyData());
+            case R.id.action_add_product:
+                //TODO: Intent to Empty EditProductActivity
                 return true;
-            case R.id.action_log_db:
-                mDbHelper.getList(mDbHelper.readAll()); //prints db as CSV to debug log
+            case R.id.action_delete_all:
+                //TODO: Delete Database content
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    public void insertDummy(ContentValues values) {
-        mDbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, values);
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+        String[] projection = {
+                ProductEntry._ID,
+                ProductEntry.COLUMN_PRODUCT_NAME,
+                ProductEntry.COLUMN_PRODUCT_PRICE,
+                ProductEntry.COLUMN_PRODUCT_QUANTITY};
+
+        return new CursorLoader(this,
+                ProductEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
     }
 
-    public void insert(String name, float price, int quantity, String supplierName, String supplierPhone) {
-        ContentValues values = new ContentValues();
-        values.put(ProductEntry.COLUMN_PRODUCT_NAME, name);
-        values.put(ProductEntry.COLUMN_PRODUCT_PRICE, price);
-        values.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
-        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, supplierName);
-        values.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, supplierPhone);
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
 
-        mDbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, values);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }
