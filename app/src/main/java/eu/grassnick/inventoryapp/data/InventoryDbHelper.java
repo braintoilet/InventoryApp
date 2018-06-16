@@ -65,7 +65,7 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    public ContentValues createDummyData() {
+    public static ContentValues createDummyData() {
         ContentValues values = new ContentValues();
         values.put(ProductEntry.COLUMN_PRODUCT_NAME, "Keyboard");
         values.put(ProductEntry.COLUMN_PRODUCT_PRICE, 2.00);

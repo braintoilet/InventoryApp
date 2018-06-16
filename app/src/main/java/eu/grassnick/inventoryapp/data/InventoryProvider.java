@@ -7,6 +7,7 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
 
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
 
@@ -40,7 +41,7 @@ public class InventoryProvider extends ContentProvider {
         SQLiteDatabase database = dbHelper.getReadableDatabase();
         Cursor cursor;
 
-        int match = sUriMatcher.match(uri);
+        final int match = sUriMatcher.match(uri);
 
         switch (match) {
             case PRODUCTS:
@@ -62,7 +63,27 @@ public class InventoryProvider extends ContentProvider {
      */
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
-        return null;
+
+        final int match = sUriMatcher.match(uri);
+
+        switch (match) {
+            case PRODUCTS:
+                return insertProduct(uri, contentValues);
+            default:
+                throw new IllegalArgumentException("Cannot query unknown URI " + uri);
+        }
+    }
+
+    private Uri insertProduct(Uri uri, ContentValues contentValues) {
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+        long id = database.insert(ProductEntry.TABLE_NAME, null, contentValues);
+
+        if (id == -1) {
+            Log.e(TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        return ContentUris.withAppendedId(uri, id);
     }
 
     /**

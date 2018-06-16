@@ -8,21 +8,24 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
+import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
 
     @BindView(R.id.product_list_view)
-    RecyclerView productList;
+    ListView productList;
+
+    ProductCursorAdapter cursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +41,12 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(new Intent(MainActivity.this, EditProductActivity.class));
             }
         });
-    }
 
-    public void displayDatabaseInfo() {
-        String[] projection = {
-                ProductEntry._ID,
-                ProductEntry.COLUMN_PRODUCT_NAME,
-                ProductEntry.COLUMN_PRODUCT_PRICE,
-                ProductEntry.COLUMN_PRODUCT_QUANTITY};
+        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
+        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
+        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
 
-        Cursor cursor = getContentResolver().query(ProductEntry.CONTENT_URI, projection, null, null, null);
+        getLoaderManager().initLoader(1, null, this);
     }
 
     @Override
@@ -72,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
@@ -92,7 +90,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+        if (data != null) {
+            cursorAdapter = new ProductCursorAdapter(this, data);
+            productList.setAdapter(cursorAdapter);
+        }
     }
 
     @Override
