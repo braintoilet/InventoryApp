@@ -19,6 +19,7 @@ public class InventoryProvider extends ContentProvider {
     public InventoryDbHelper dbHelper;
 
     private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+    public static final String CONTENT_TYPE = "vnd.android.cursor.dir/eu.grassnick.inventoryapp/products";
 
     static {
         sUriMatcher.addURI(ProductEntry.CONTENT_AUTHORITY, ProductEntry.PATH_PRODUCTS, PRODUCTS);
@@ -31,9 +32,6 @@ public class InventoryProvider extends ContentProvider {
         return true;
     }
 
-    /**
-     * Perform the query for the given URI. Use the given projection, selection, selection arguments, and sort order.
-     */
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
@@ -58,9 +56,6 @@ public class InventoryProvider extends ContentProvider {
         return cursor;
     }
 
-    /**
-     * Insert new data into the provider with the given ContentValues.
-     */
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
 
@@ -75,8 +70,19 @@ public class InventoryProvider extends ContentProvider {
     }
 
     private Uri insertProduct(Uri uri, ContentValues contentValues) {
-        SQLiteDatabase database = dbHelper.getWritableDatabase();
-        long id = database.insert(ProductEntry.TABLE_NAME, null, contentValues);
+        //Check that the Name, the Price and the Quantity are set
+        String name = contentValues.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
+        float price = contentValues.getAsFloat(ProductEntry.COLUMN_PRODUCT_PRICE);
+        int quantity = contentValues.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+
+        if (name == null)
+            throw new IllegalArgumentException("Product requires a name");
+        if (price < 0.0)
+            throw new IllegalArgumentException("Price cant be negative.");
+        if (quantity < 0)
+            throw new IllegalArgumentException("Quantity cant be negative.");
+
+        long id = dbHelper.getWritableDatabase().insert(ProductEntry.TABLE_NAME, null, contentValues);
 
         if (id == -1) {
             Log.e(TAG, "Failed to insert row for " + uri);
@@ -86,27 +92,80 @@ public class InventoryProvider extends ContentProvider {
         return ContentUris.withAppendedId(uri, id);
     }
 
-    /**
-     * Updates the data at the given selection and selection arguments, with the new ContentValues.
-     */
     @Override
     public int update(Uri uri, ContentValues contentValues, String selection, String[] selectionArgs) {
-        return 0;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PRODUCTS:
+                return updateProduct(uri, contentValues, selection, selectionArgs);
+            case PRODUCT_ID:
+                selection = ProductEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return updateProduct(uri, contentValues, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Update is not supported for " + uri);
+        }
     }
 
-    /**
-     * Delete the data at the given selection and selection arguments.
-     */
+    private int updateProduct(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+        //return 0 if there are no values present
+        if (values.size() == 0)
+            return 0;
+
+        //Check if Name is valid
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_NAME)) {
+            String name = values.getAsString(ProductEntry.COLUMN_PRODUCT_NAME);
+            if (name == null)
+                throw new IllegalArgumentException("Product requires a name");
+            else if (name.length() < 1)
+                throw new IllegalArgumentException("Product requires a proper name.");
+        }
+
+        //Check if quantity is valid
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_QUANTITY)) {
+            int quantity = values.getAsInteger(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            if (quantity < 0)
+                throw new IllegalArgumentException("Quantity cant be negative.");
+        }
+
+        //Check if price is valid
+        if (values.containsKey(ProductEntry.COLUMN_PRODUCT_PRICE)) {
+            float price = values.getAsFloat(ProductEntry.COLUMN_PRODUCT_QUANTITY);
+            if (price < 0.0)
+                throw new IllegalArgumentException("Price cant be negative.");
+        }
+
+        return dbHelper.getWritableDatabase().update(ProductEntry.TABLE_NAME, values, selection, selectionArgs);
+    }
+
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        return 0;
+        // Get writeable database
+        SQLiteDatabase database = dbHelper.getWritableDatabase();
+
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PRODUCTS:
+                return database.delete(ProductEntry.TABLE_NAME, selection, selectionArgs);
+            case PRODUCT_ID:
+                selection = ProductEntry._ID + "=?";
+                selectionArgs = new String[]{String.valueOf(ContentUris.parseId(uri))};
+                return database.delete(ProductEntry.TABLE_NAME, selection, selectionArgs);
+            default:
+                throw new IllegalArgumentException("Deletion is not supported for " + uri);
+        }
     }
 
-    /**
-     * Returns the MIME type of data for the content URI.
-     */
     @Override
     public String getType(Uri uri) {
-        return null;
+        final int match = sUriMatcher.match(uri);
+        switch (match) {
+            case PRODUCTS:
+                return ProductEntry.CONTENT_LIST_TYPE;
+            case PRODUCT_ID:
+                return ProductEntry.CONTENT_ITEM_TYPE;
+            default:
+                throw new IllegalStateException("Unknown URI " + uri + " with match " + match);
+        }
     }
 }

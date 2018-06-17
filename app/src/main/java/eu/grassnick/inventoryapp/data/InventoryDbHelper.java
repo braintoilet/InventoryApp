@@ -2,12 +2,9 @@ package eu.grassnick.inventoryapp.data;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
-
-import java.util.ArrayList;
 
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
 
@@ -39,30 +36,6 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Nothing to upgrade until DATABASE_VERSION gets updated
-    }
-
-    public ArrayList<InventoryItem> getList(Cursor cursor) {
-        ArrayList<InventoryItem> list = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            while (!cursor.isAfterLast()) {
-                InventoryItem item = new InventoryItem(cursor.getInt(cursor.getColumnIndex(ProductEntry._ID)),
-                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME)),
-                        cursor.getFloat(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE)),
-                        cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY)),
-                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME)),
-                        cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE)));
-
-                Log.d(TAG, "getList: Row: " + item.getCSVString());
-                list.add(item);
-                cursor.moveToNext();
-            }
-        }
-
-        if (!cursor.isClosed())
-            cursor.close();
-
-        return list;
     }
 
     public static ContentValues createDummyData() {

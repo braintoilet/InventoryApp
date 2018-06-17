@@ -17,7 +17,6 @@ import android.widget.ListView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
-import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
@@ -25,7 +24,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.product_list_view)
     ListView productList;
 
-    ProductCursorAdapter cursorAdapter;
+    @BindView(R.id.main_fab)
+    FloatingActionButton fab;
+
+    private ProductCursorAdapter cursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         ButterKnife.bind(this);
 
-        FloatingActionButton fab = findViewById(R.id.main_fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -42,9 +43,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
-        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
-        getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
+        //getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
 
         getLoaderManager().initLoader(1, null, this);
     }
