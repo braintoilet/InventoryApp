@@ -3,6 +3,7 @@ package eu.grassnick.inventoryapp;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -20,7 +21,7 @@ import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
 
 public class ProductCursorAdapter extends CursorAdapter {
 
-    public ProductCursorAdapter(Context context, Cursor c) {
+    ProductCursorAdapter(Context context, Cursor c) {
         super(context, c, 0);
     }
 
@@ -33,9 +34,12 @@ public class ProductCursorAdapter extends CursorAdapter {
     public void bindView(View view, final Context context, final Cursor cursor) {
         ViewHolder viewHolder = new ViewHolder(view);
 
+        final int id = cursor.getInt(cursor.getColumnIndex(ProductEntry._ID));
+        final Uri uri = ContentUris.withAppendedId(ProductEntry.CONTENT_URI, id);
         String name = cursor.getString(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME));
         float price = cursor.getFloat(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE));
         final int quantity = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
+
 
         NumberFormat nf = NumberFormat.getCurrencyInstance();
         nf.setMaximumFractionDigits(2);
@@ -47,18 +51,24 @@ public class ProductCursorAdapter extends CursorAdapter {
         viewHolder.sellButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //do nothing if quantity is 0
-                if (quantity == 0)
-                    return;
+                if (quantity > 0) {
+                    int newQuantity = quantity - 1;
 
-                //Reduce quantity by 1 and update the database
-                int id = cursor.getInt(cursor.getColumnIndex(ProductEntry._ID));
-                Uri uri = ContentUris.withAppendedId(ProductEntry.CONTENT_URI, id);
+                    //update the database
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, newQuantity);
 
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity - 1);
+                    context.getContentResolver().update(ContentUris.withAppendedId(ProductEntry.CONTENT_URI, id), contentValues, null, null);
+                }
+            }
+        });
 
-                context.getContentResolver().update(uri, contentValues, null, null);
+        viewHolder.listItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(context, EditProductActivity.class);
+                i.putExtra("uri", uri.toString());
+                context.startActivity(new Intent(context, EditProductActivity.class));
             }
         });
     }
@@ -75,7 +85,10 @@ public class ProductCursorAdapter extends CursorAdapter {
         @BindView(R.id.list_item_sell_button)
         Button sellButton;
 
-        public ViewHolder(View view) {
+        @BindView(R.id.list_item)
+        View listItem;
+
+        ViewHolder(View view) {
             ButterKnife.bind(this, view);
         }
     }

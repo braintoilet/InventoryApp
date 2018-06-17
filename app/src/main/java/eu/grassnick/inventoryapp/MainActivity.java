@@ -21,6 +21,13 @@ import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
+    private static final int URL_LOADER = 1;
+
+    private static final String[] mProjection = {
+            ProductEntry._ID,
+            ProductEntry.COLUMN_PRODUCT_NAME,
+            ProductEntry.COLUMN_PRODUCT_PRICE,
+            ProductEntry.COLUMN_PRODUCT_QUANTITY};
 
     @BindView(R.id.product_list_view)
     ListView productList;
@@ -31,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.empty_view)
     View emptyView;
 
-    private ProductCursorAdapter cursorAdapter;
+    private ProductCursorAdapter mCursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +54,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 startActivity(new Intent(MainActivity.this, EditProductActivity.class));
             }
         });
-
-
 
         getLoaderManager().initLoader(1, null, this);
     }
@@ -79,31 +84,29 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-
-        String[] projection = {
-                ProductEntry._ID,
-                ProductEntry.COLUMN_PRODUCT_NAME,
-                ProductEntry.COLUMN_PRODUCT_PRICE,
-                ProductEntry.COLUMN_PRODUCT_QUANTITY};
-
-        return new CursorLoader(this,
-                ProductEntry.CONTENT_URI,
-                projection,
-                null,
-                null,
-                null);
+        switch (id) {
+            case URL_LOADER:
+                return new CursorLoader(this,
+                        ProductEntry.CONTENT_URI,
+                        mProjection,
+                        null,
+                        null,
+                        null);
+            default:
+                return null;
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data != null) {
-            cursorAdapter = new ProductCursorAdapter(this, data);
-            productList.setAdapter(cursorAdapter);
+            mCursorAdapter = new ProductCursorAdapter(this, data);
+            productList.setAdapter(mCursorAdapter);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        loader.forceLoad();
     }
 }
