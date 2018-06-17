@@ -40,7 +40,6 @@ public class ProductCursorAdapter extends CursorAdapter {
         float price = cursor.getFloat(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE));
         final int quantity = cursor.getInt(cursor.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
 
-
         NumberFormat nf = NumberFormat.getCurrencyInstance();
         nf.setMaximumFractionDigits(2);
         String priceString = nf.format(price);
@@ -66,9 +65,8 @@ public class ProductCursorAdapter extends CursorAdapter {
         viewHolder.listItem.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(context, EditProductActivity.class);
-                i.putExtra("uri", uri.toString());
-                context.startActivity(new Intent(context, EditProductActivity.class));
+                Intent intent = new Intent(context, EditProductActivity.class).putExtra("uri", uri);
+                context.startActivity(intent);
             }
         });
     }
