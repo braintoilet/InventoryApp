@@ -17,6 +17,7 @@ import android.widget.ListView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
+import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
@@ -27,14 +28,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.main_fab)
     FloatingActionButton fab;
 
+    @BindView(R.id.empty_view)
+    View emptyView;
+
     private ProductCursorAdapter cursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         ButterKnife.bind(this);
+
+        productList.setEmptyView(emptyView);
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        //getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
+
 
         getLoaderManager().initLoader(1, null, this);
     }
@@ -63,8 +68,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 //TODO: Intent to Empty EditProductActivity
                 return true;
             case R.id.action_delete_all:
-                //TODO: Delete Database content
+                getContentResolver().delete(ProductEntry.CONTENT_URI, null, null);
                 return true;
+            case R.id.action_add_sample:
+                getContentResolver().insert(ProductEntry.CONTENT_URI, InventoryDbHelper.createDummyData());
             default:
                 return super.onOptionsItemSelected(item);
         }

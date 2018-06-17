@@ -4,14 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="@dimen/textview_padding_captions"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    tools:context=".MainActivity">
 
     <TextView
         android:id="@+id/list_item_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="2"
-        android:textSize="@dimen/textview_text_size"
+        android:textSize="@dimen/list_item_text_size"
         android:textStyle="bold"
         tools:text="Keyboard" />
 
@@ -21,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textAlignment="center"
-        android:textSize="@dimen/textview_text_size"
+        android:textSize="@dimen/list_item_text_size"
         android:textStyle="bold"
         tools:text="12€" />
 
@@ -31,7 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textAlignment="center"
-        android:textSize="@dimen/textview_text_size"
+        android:textSize="@dimen/list_item_text_size"
         android:textStyle="bold"
         tools:text="12" />
 
@@ -41,5 +42,5 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="@string/button_sell"
-        android:textSize="@dimen/textview_text_size" />
+        android:textSize="@dimen/list_item_text_size" />
 </LinearLayout>
