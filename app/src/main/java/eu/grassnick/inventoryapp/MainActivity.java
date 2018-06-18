@@ -22,6 +22,7 @@ import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
     private static final int URL_LOADER = 1;
+    private ProductCursorAdapter mCursorAdapter;
 
     private static final String[] mProjection = {
             ProductEntry._ID,
@@ -38,8 +39,6 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.empty_view)
     View emptyView;
 
-    private ProductCursorAdapter mCursorAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         });
 
-        getLoaderManager().initLoader(1, null, this);
+        getLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
     @Override

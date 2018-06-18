@@ -7,4 +7,5 @@
     <dimen name="textview_padding_captions">8dp</dimen>
     <dimen name="textview_text_size">24sp</dimen>
     <dimen name="fab_size">36dp</dimen>
+    <dimen name="edit_activity_padding">12dp</dimen>
 </resources>

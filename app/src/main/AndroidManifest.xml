@@ -23,7 +23,7 @@
 
         <activity
             android:name=".EditProductActivity"
-            android:label="@string/title_activity_edit_product"
+            android:label="@string/title_view_product"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
