@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="fab_margin">12dp</dimen>
     <dimen name="table_header_text_size">18sp</dimen>
     <dimen name="table_header_padding">12dp</dimen>
     <dimen name="list_item_text_size">16sp</dimen>
@@ -8,4 +8,7 @@
     <dimen name="textview_text_size">24sp</dimen>
     <dimen name="fab_size">36dp</dimen>
     <dimen name="edit_activity_padding">12dp</dimen>
+    <dimen name="text_quantity_padding">16dp</dimen>
+    <dimen name="divider_padding">8dp</dimen>
+    <dimen name="quantity_buttons_width">48dp</dimen>
 </resources>

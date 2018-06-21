@@ -22,22 +22,18 @@ import eu.grassnick.inventoryapp.data.InventoryDbHelper;
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final String TAG = "MainActivity";
     private static final int URL_LOADER = 1;
-    private ProductCursorAdapter mCursorAdapter;
-
     private static final String[] mProjection = {
             ProductEntry._ID,
             ProductEntry.COLUMN_PRODUCT_NAME,
             ProductEntry.COLUMN_PRODUCT_PRICE,
             ProductEntry.COLUMN_PRODUCT_QUANTITY};
-
     @BindView(R.id.product_list_view)
     ListView productList;
-
     @BindView(R.id.main_fab)
     FloatingActionButton fab;
-
     @BindView(R.id.empty_view)
     View emptyView;
+    private ProductCursorAdapter mCursorAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -1,19 +1,28 @@
 package eu.grassnick.inventoryapp;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.NumberFormat;
@@ -21,14 +30,10 @@ import java.text.NumberFormat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
-import eu.grassnick.inventoryapp.data.InventoryItem;
 
 public class EditProductActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int URL_LOADER = 1;
-    private static final int MODE_VIEW = 1;
-    private static final int MODE_EDIT = 2;
-    private static final int MODE_ADD = 3;
     private static final String[] mProjection = {
             ProductEntry._ID,
             ProductEntry.COLUMN_PRODUCT_NAME,
@@ -36,19 +41,60 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             ProductEntry.COLUMN_PRODUCT_QUANTITY,
             ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME,
             ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE};
+
     @BindView(R.id.edit_name)
     EditText editName;
     @BindView(R.id.edit_price)
     EditText editPrice;
-    @BindView(R.id.edit_quantity)
-    EditText editQuantity;
     @BindView(R.id.edit_supplier_name)
     EditText editSupplierName;
     @BindView(R.id.edit_supplier_phone)
     EditText editSupplierPhone;
-    private int mCurrentMode = MODE_ADD;
-    private Uri mUri = ProductEntry.CONTENT_URI;
-    private InventoryItem mCurrentItem;
+    @BindView(R.id.text_quantity)
+    TextView textQuantity;
+    @BindView(R.id.button_increase_quantity)
+    Button buttonIncreaseQuantity;
+    @BindView(R.id.button_decrease_quantity)
+    Button buttonDecreaseQuantity;
+    @BindView(R.id.button_call_supplier)
+    Button buttonCallSupplier;
+    @BindView(R.id.save_fab)
+    FloatingActionButton fab;
+
+    private Uri mUri = null;
+    private boolean mProductChanged = false;
+    private int mQuantity;
+
+    private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+            mProductChanged = true;
+            return false;
+        }
+    };
+    
+    private View.OnClickListener mOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.button_call_supplier:
+                    callSupplier();
+                    break;
+                case R.id.button_increase_quantity:
+                    mQuantity = Integer.parseInt(textQuantity.getText().toString()) + 1;
+                    textQuantity.setText(String.valueOf(mQuantity));
+                    break;
+                case R.id.button_decrease_quantity:
+                    mQuantity = Integer.parseInt(textQuantity.getText().toString());
+                    //only decrease if not zero
+                    if (mQuantity != 0) {
+                        mQuantity--;
+                        textQuantity.setText(String.valueOf(mQuantity));
+                    }
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,34 +102,82 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
         setContentView(R.layout.activity_edit_product);
         ButterKnife.bind(this);
 
-        Intent intent = getIntent();
+        //Set OnCliCkListener for the increase, decrease, the FloatingActionButton and callSupplier button
+        buttonDecreaseQuantity.setOnClickListener(mOnClickListener);
+        buttonIncreaseQuantity.setOnClickListener(mOnClickListener);
+        buttonCallSupplier.setOnClickListener(mOnClickListener);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveProduct();
+            }
+        });
 
-        //If the intent delivers a uri set mUri and init the CursorLoader
-        if (intent.hasExtra("uri")) {
-            mUri = intent.getParcelableExtra("uri");
-            mCurrentMode = MODE_VIEW;
-            switchToViewMode();
+        //Set OnTouchListener for the relevant views
+        buttonIncreaseQuantity.setOnTouchListener(mTouchListener);
+        buttonDecreaseQuantity.setOnTouchListener(mTouchListener);
+        editName.setOnTouchListener(mTouchListener);
+        editPrice.setOnTouchListener(mTouchListener);
+        editSupplierPhone.setOnTouchListener(mTouchListener);
+        editSupplierName.setOnTouchListener(mTouchListener);
+
+        Intent callingIntent = getIntent();
+        //If the intent delivers a uri set mUri
+        if (callingIntent.hasExtra("uri")) {
+            mUri = callingIntent.getParcelableExtra("uri");
+            switchToEditMode();
         } else {
-            mCurrentMode = MODE_ADD;
             switchToEditMode();
         }
 
+        //Init the CursorLoader
+        getLoaderManager().initLoader(URL_LOADER, null, this);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.edit_menu, menu);
+        return true;
+    }
 
-        //Check which mode is currently active, and inflate the according menu
-        switch (mCurrentMode) {
-            case MODE_ADD:
-                inflater.inflate(R.menu.add_menu, menu);
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        //If were in Add mode hide the delete option
+        if (mUri == null)
+            menu.findItem(R.id.action_delete_product).setVisible(false);
+        else
+            menu.findItem(R.id.action_delete_product).setVisible(true);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_save_product:
+                saveProduct();
                 return true;
-            case MODE_EDIT:
-                inflater.inflate(R.menu.edit_menu, menu);
+            case R.id.action_delete_product:
+                if (deleteProduct() > 0)
+                    super.onBackPressed();
                 return true;
-            case MODE_VIEW:
-                inflater.inflate(R.menu.view_menu, menu);
+            case android.R.id.home:
+                if (!mProductChanged) {
+                    NavUtils.navigateUpFromSameTask(EditProductActivity.this);
+                    return true;
+                }
+
+                // Create OnClickListener
+                DialogInterface.OnClickListener discardButtonClickListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        // navigate to parent activity.
+                        NavUtils.navigateUpFromSameTask(EditProductActivity.this);
+                    }
+                };
+
+                // Show a dialog that notifies the user
+                showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
             default:
                 return false;
@@ -91,154 +185,117 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (mCurrentMode) {
-            case MODE_ADD:
-                if (item.getItemId() == R.id.action_save_product)
-                    saveProduct();
-                return true;
-            case MODE_EDIT:
-                switch (item.getItemId()) {
-                    case R.id.action_save_product:
-                        saveProduct();
-                        break;
-                    case R.id.action_delete_product:
-                        deleteProduct();
-                        break;
-                }
-                return true;
-            case MODE_VIEW:
-                switch (item.getItemId()) {
-                    case R.id.action_edit_product:
-                        switchToEditMode();
-                        break;
-                    case R.id.action_delete_product:
-                        deleteProduct();
-                        break;
-                }
-                return true;
-            default:
-                return false;
+    public void onBackPressed() {
+        if (!mProductChanged) {
+            super.onBackPressed();
+            return;
         }
 
+        DialogInterface.OnClickListener discardButtonClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                // close current activity
+                finish();
+            }
+        };
+
+        // Show dialog that there are unsaved changes
+        showUnsavedChangesDialog(discardButtonClickListener);
+    }
+
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.unsaved_changes_dialog);
+        builder.setPositiveButton(R.string.discard, discardButtonClickListener);
+        builder.setNegativeButton(R.string.keep_editing, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (dialog != null)
+                    dialog.dismiss();
+            }
+        });
+
+        // Create and show
+        builder.create();
+        builder.show();
     }
 
     private void switchToEditMode() {
         // check if were editing a existing product or add a new one
-        if (mCurrentItem != null) {
-            fillLayout();
-            mCurrentMode = MODE_EDIT;
-            getActionBar().setTitle(R.string.title_edit_product);
+        if (mUri == null) {
+            setTitle(R.string.title_activity_add_product); //Set ActionBar title
+            buttonCallSupplier.setVisibility(View.INVISIBLE); //Hide the call supplier button
+            editPrice.setText(floatToCurrencyString(0.0f));//Set to 0 with device currencyformat
         } else {
-            mCurrentMode = MODE_ADD;
-            getActionBar().setTitle(R.string.title_add_product);
+            setTitle(R.string.title_activity_edit_product); //Set ActionBar title
+            buttonCallSupplier.setVisibility(View.VISIBLE); //Show the call supplier button
         }
 
-        //Enable editText's
-        editName.setEnabled(true);
-        editPrice.setEnabled(true);
-        editQuantity.setEnabled(true);
-        editSupplierName.setEnabled(true);
-        editSupplierPhone.setEnabled(true);
-
         invalidateOptionsMenu();
-    }
-
-    private void switchToViewMode() {
-        //Change title
-        getActionBar().setTitle(R.string.title_view_product);
-
-        //fill layout
-        fillLayout();
-
-        //disable editText's
-        editName.setEnabled(false);
-        editPrice.setEnabled(false);
-        editQuantity.setEnabled(false);
-        editSupplierName.setEnabled(false);
-        editSupplierPhone.setEnabled(false);
-
-        mCurrentMode = MODE_VIEW;
-        invalidateOptionsMenu();
-    }
-
-    private void fillLayout() {
-        if (mCurrentItem != null) {
-            //Format the price
-            NumberFormat nf = NumberFormat.getCurrencyInstance();
-            nf.setMaximumFractionDigits(2);
-            String priceString = nf.format(mCurrentItem.getPrice());
-
-            //Populate layout with data from mCurrentItem
-            editName.setText(mCurrentItem.getName());
-            editPrice.setText(priceString);
-            editQuantity.setText(mCurrentItem.getName());
-            editSupplierName.setText(mCurrentItem.getName());
-            editSupplierPhone.setText(mCurrentItem.getName());
-        }
     }
 
     private void saveProduct() {
         String name = editName.getText().toString();
-        int quantity = Integer.parseInt(editQuantity.getText().toString());
-        float price = Float.parseFloat(editQuantity.getText().toString());
+        String quantityString = textQuantity.getText().toString();
+        String priceString = textQuantity.getText().toString();
         String supplierPhone = editSupplierPhone.getText().toString();
         String supplierName = editSupplierName.getText().toString();
 
-        //check if the entered values are valid
-        if (name.length() <= 0) {
-            Toast.makeText(this, "Please enter a valid name.", Toast.LENGTH_LONG);
+        //Return if empty
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceString)) {
+            //Notify the user
+            Toast.makeText(this, "Could not save. Please enter a valid name and price.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        if (quantity < 0)
-            quantity = 0;
-
-        if (price < 0.0f)
-            price = 0.0f;
-
         ContentValues contentValues = new ContentValues();
         contentValues.put(ProductEntry.COLUMN_PRODUCT_NAME, name);
-        contentValues.put(ProductEntry.COLUMN_PRODUCT_PRICE, price);
-        contentValues.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, quantity);
+        contentValues.put(ProductEntry.COLUMN_PRODUCT_PRICE, Float.valueOf(priceString));
+        contentValues.put(ProductEntry.COLUMN_PRODUCT_QUANTITY, Integer.valueOf(quantityString));
         contentValues.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, supplierName);
         contentValues.put(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, supplierPhone);
 
-
-        if (mCurrentMode == MODE_ADD) {
+        if (mUri == null) {
             //insert new product
             mUri = getContentResolver().insert(ProductEntry.CONTENT_URI, contentValues);
-        } else if (mCurrentMode == MODE_EDIT) {
-            long id = getContentResolver().update(mUri, contentValues, null, null);
-            mCurrentItem = new InventoryItem(id, name, price, quantity, supplierName, supplierPhone);
+            if (mUri != null) {
+                switchToEditMode();
+            }
+        } else {
+            // update the product
+            int rowsUpdated = getContentResolver().update(mUri, contentValues, null, null);
+            if (rowsUpdated != 0)
+                getContentResolver().notifyChange(mUri, null);
         }
-        getLoaderManager().getLoader(URL_LOADER).forceLoad();
-        switchToViewMode();
     }
 
     private int deleteProduct() {
-        if (mCurrentItem != null) {
-            return getContentResolver().delete(ContentUris.withAppendedId(ProductEntry.CONTENT_URI, mCurrentItem.getID()), null, null);
+        if (mUri != null) {
+            int rowsDeleted = getContentResolver().delete(mUri, null, null);
+            if (rowsDeleted > 0) {
+                getContentResolver().notifyChange(mUri, null);
+                return rowsDeleted;
+            }
         }
         return 0;
     }
 
     private void callSupplier() {
         //If in View mode and if the number is valid, call intent to phone app
-        if (mCurrentMode == MODE_VIEW) {
-            String number = mCurrentItem.getSupplierPhone();
-            if (isValidMobile(number)) {
-
+        if (mUri != null) {
+            String number = editSupplierPhone.getText().toString();
+            if (isValidPhoneNumber(number)) {
+                startActivity(new Intent(Intent.ACTION_DIAL).setData(Uri.parse("tel:" + number)));
+            } else {
+                Toast.makeText(this, "Please enter a valid phone number.", Toast.LENGTH_LONG).show();
             }
         }
     }
 
-    private boolean isValidMobile(String phone) {
-        return android.util.Patterns.PHONE.matcher(phone).matches();
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        if (mUri == null)
+            return null;
+
         switch (id) {
             case URL_LOADER:
                 return new CursorLoader(this,
@@ -255,27 +312,46 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         if (data.moveToFirst()) {
-            int id = data.getInt(data.getColumnIndex(ProductEntry._ID));
+            long id = data.getLong(data.getColumnIndex(ProductEntry._ID));
             String name = data.getString(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_NAME));
             float price = data.getFloat(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_PRICE));
-            int quantity = data.getInt(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
+            String quantity = data.getString(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_QUANTITY));
             String supplierName = data.getString(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME));
             String supplierPhone = data.getString(data.getColumnIndex(ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE));
 
-            if (supplierName == null)
-                supplierName = "";
-            if (supplierPhone == null)
-                supplierName = "";
+            // Populate layout with the data from the Cursor
+            editName.setText(name);
+            editPrice.setText(floatToCurrencyString(price)); //Format price before setting it
+            textQuantity.setText(quantity);
+            editSupplierName.setText(supplierName);
+            editSupplierPhone.setText(supplierPhone);
 
-            mCurrentItem = new InventoryItem(id, name, price, quantity, supplierName, supplierPhone);
-
-            if (!data.isClosed())
-                data.close();
+            mUri = ContentUris.withAppendedId(ProductEntry.CONTENT_URI, id);
+            data.setNotificationUri(getContentResolver(), mUri);
         }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
+        //Clear Input Fields
+        editName.setText(R.string.empty_string);
+        editPrice.setText(R.string.empty_string);
+        textQuantity.setText(R.string.empty_string);
+        editSupplierName.setText(R.string.empty_string);
+        editSupplierPhone.setText(R.string.empty_string);
+
+        //Reload
         loader.forceLoad();
+    }
+
+    /* HELPER METHODS */
+    private boolean isValidPhoneNumber(String phone) {
+        return android.util.Patterns.PHONE.matcher(phone).matches();
+    }
+
+    private String floatToCurrencyString(float amount) {
+        NumberFormat nf = NumberFormat.getCurrencyInstance();
+        nf.setMaximumFractionDigits(2);
+        return nf.format(amount);
     }
 }
