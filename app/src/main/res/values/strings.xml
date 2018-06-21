@@ -40,4 +40,6 @@
     <string name="quantity_zero">0</string>
     <string name="button_call_supplier">Call Supplier</string>
     <string name="empty_string"> </string>
+    <string name="toast_cant_save">Could not save. Please enter all fields.</string>
+    <string name="toast_enter_valid_phone">Please enter a valid phone number.</string>
 </resources>

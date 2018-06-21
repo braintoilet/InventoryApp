@@ -247,7 +247,7 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
                 || TextUtils.isEmpty(supplierPhone)
                 || TextUtils.isEmpty(supplierName)) {
             //Notify the user
-            Toast.makeText(this, "Could not save. Please check your input and try again.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.toast_cant_save, Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -290,7 +290,7 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             if (isValidPhoneNumber(number)) {
                 startActivity(new Intent(Intent.ACTION_DIAL).setData(Uri.parse("tel:" + number)));
             } else {
-                Toast.makeText(this, "Please enter a valid phone number.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, R.string.toast_enter_valid_phone, Toast.LENGTH_LONG).show();
             }
         }
     }
