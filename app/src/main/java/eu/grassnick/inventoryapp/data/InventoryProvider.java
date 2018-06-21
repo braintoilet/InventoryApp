@@ -15,19 +15,18 @@ import java.util.Objects;
 import eu.grassnick.inventoryapp.data.InventoryContract.ProductEntry;
 
 public class InventoryProvider extends ContentProvider {
-    private static final String TAG = "ProductProvider";
-
     public static final int PRODUCTS = 1000;
     public static final int PRODUCT_ID = 1001;
-    public InventoryDbHelper dbHelper;
-
-    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     public static final String CONTENT_TYPE = "vnd.android.cursor.dir/eu.grassnick.inventoryapp/products";
+    private static final String TAG = "ProductProvider";
+    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
         sUriMatcher.addURI(ProductEntry.CONTENT_AUTHORITY, ProductEntry.PATH_PRODUCTS, PRODUCTS);
         sUriMatcher.addURI(ProductEntry.CONTENT_AUTHORITY, ProductEntry.PATH_PRODUCTS + "/#", PRODUCT_ID);
     }
+
+    public InventoryDbHelper dbHelper;
 
     @Override
     public boolean onCreate() {

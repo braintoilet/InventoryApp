@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:contentDescription="@string/content_desc_cart_image"
-        android:src="@drawable/cart" />
+        android:src="@drawable/cart_blue" />
 
     <TextView
         android:id="@+id/empty_title_text"

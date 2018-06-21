@@ -72,7 +72,7 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             return false;
         }
     };
-    
+
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -241,9 +241,13 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
         String supplierName = editSupplierName.getText().toString();
 
         //Return if empty
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceString)) {
+        if (TextUtils.isEmpty(name)
+                || TextUtils.isEmpty(priceString)
+                || TextUtils.isEmpty(quantityString)
+                || TextUtils.isEmpty(supplierPhone)
+                || TextUtils.isEmpty(supplierName)) {
             //Notify the user
-            Toast.makeText(this, "Could not save. Please enter a valid name and price.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Could not save. Please check your input and try again.", Toast.LENGTH_LONG).show();
             return;
         }
 

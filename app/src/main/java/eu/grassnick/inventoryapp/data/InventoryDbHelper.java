@@ -14,9 +14,8 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
             + ProductEntry.COLUMN_PRODUCT_NAME + " TEXT NOT NULL, "
             + ProductEntry.COLUMN_PRODUCT_PRICE + " REAL NOT NULL DEFAULT 0.00, "
             + ProductEntry.COLUMN_PRODUCT_QUANTITY + " INTEGER NOT NULL DEFAULT 0, "
-            + ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME + " TEXT, "
-            + ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE + " TEXT" + ");";
-
+            + ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME + " TEXT NOT NULL, "
+            + ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE + " TEXT NOT NULL" + ");";
 
     public static final int DATABASE_VERSION = 1; //increment by 1 each time the schema gets changed
     public static final String DATABASE_NAME = "Inventory.db";
