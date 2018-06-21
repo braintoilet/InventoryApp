@@ -262,13 +262,17 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             //insert new product
             mUri = getContentResolver().insert(ProductEntry.CONTENT_URI, contentValues);
             if (mUri != null) {
+                mProductChanged = false; //product is saved, so set back to false
                 switchToEditMode();
             }
         } else {
             // update the product
             int rowsUpdated = getContentResolver().update(mUri, contentValues, null, null);
-            if (rowsUpdated != 0)
+            if (rowsUpdated != 0) {
+                mProductChanged = false; //product is saved, so set back to false
                 getContentResolver().notifyChange(mUri, null);
+            }
+
         }
     }
 
