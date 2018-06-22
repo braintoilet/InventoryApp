@@ -158,8 +158,7 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
                 saveProduct();
                 return true;
             case R.id.action_delete_product:
-                if (deleteProduct() > 0)
-                    super.onBackPressed();
+                deleteProduct();
                 return true;
             case android.R.id.home:
                 if (!mProductChanged) {
@@ -263,7 +262,7 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             mUri = getContentResolver().insert(ProductEntry.CONTENT_URI, contentValues);
             if (mUri != null) {
                 mProductChanged = false; //product is saved, so set back to false
-                switchToEditMode();
+                finish(); //return to the MainActivity
             }
         } else {
             // update the product
@@ -271,20 +270,20 @@ public class EditProductActivity extends AppCompatActivity implements LoaderMana
             if (rowsUpdated != 0) {
                 mProductChanged = false; //product is saved, so set back to false
                 getContentResolver().notifyChange(mUri, null);
+                finish(); //return to the MainActivity
             }
 
         }
     }
 
-    private int deleteProduct() {
+    private void deleteProduct() {
         if (mUri != null) {
             int rowsDeleted = getContentResolver().delete(mUri, null, null);
             if (rowsDeleted > 0) {
                 getContentResolver().notifyChange(mUri, null);
-                return rowsDeleted;
+                finish(); //Product deleted, return to main App
             }
         }
-        return 0;
     }
 
     private void callSupplier() {
