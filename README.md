@@ -12,3 +12,7 @@ InventoryApp for the Udacity Android Basics Nanodegree Sholarship
 * drawables: [materialdesignicons](https://materialdesignicons.com/)
 * libraries: [ButterKnife](https://jakewharton.github.io/butterknife/)
 
+# Thank's
+I would like to thank [Udacity](http://udacity.com) and [Google](http://google.com) for my Scholarship.
+Your courses are great and i learned a lot!
+
